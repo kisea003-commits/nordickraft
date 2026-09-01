@@ -46,3 +46,27 @@ tilgjengelige.
 
 Prisma-modeller: `Candidate`, `Job`, `Match` (se `prisma/schema.prisma`). SQLite-filen
 opprettes lokalt og er gitignored – kjør migrasjonene over for å sette den opp på nytt.
+
+## Deploy til Railway
+
+`npm start` kjører `prisma migrate deploy && tsx prisma/seed.ts && next start -p $PORT`,
+så en frisk deploy migrerer, seeder og starter appen i ett steg – ingen manuelle steg
+etter at tjenesten er koblet til.
+
+1. Gå til [railway.app](https://railway.app) og logg inn med GitHub.
+2. **New Project → Deploy from GitHub repo** → velg `kisea003-commits/nordickraft`.
+   Railway kjenner igjen Next.js automatisk (Nixpacks) og bruker `npm run build` /
+   `npm run start` fra `package.json`.
+3. Under **Variables**, legg inn:
+   - `ANTHROPIC_API_KEY`
+   - `ADMIN_PASSWORD`
+   - `ADMIN_SESSION_SECRET`
+   - `DATABASE_URL` = `file:./dev.db` (fungerer uten volum – se under)
+4. Deploy. Railway gir deg en `*.up.railway.app`-URL – den kan du åpne fra hvilken som
+   helst enhet, inkludert telefon.
+
+**Om persistens:** Uten et Railway Volume ligger SQLite-filen på tjenestens vanlige
+disk, som består mellom vanlige restarts, men nullstilles ved ny deploy (siden
+`npm start` kjører seed på nytt uansett, er det uansett aldri tomt for demo-data).
+Vil du beholde data på tvers av deploys: legg til en **Volume** på tjenesten
+(f.eks. mountet på `/data`), og sett `DATABASE_URL=file:/data/dev.db` i Variables.
