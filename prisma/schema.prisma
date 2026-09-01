@@ -1,0 +1,108 @@
+// NordicKraft database schema
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Availability {
+  HELTID
+  DELTID
+  BEGGE
+}
+
+enum ExperienceLevel {
+  NYUTDANNET
+  JUNIOR
+  ERFAREN
+  SENIOR
+}
+
+enum Duration {
+  FAST
+  VIKARIAT
+  PROSJEKT
+}
+
+enum MatchStatus {
+  FORESLATT
+  SENDT_TIL_KUNDE
+  INTERVJU_BOOKET
+  ANSATT
+  AVSLATT
+}
+
+model Candidate {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  phone          String
+  education      String
+  skillsText     String // fritekst ferdigheter, as submitted
+  availableFrom  DateTime?
+  availability   Availability @default(HELTID)
+  location       String
+  aboutMe        String?
+  cvFileName     String? // original filename of uploaded CV
+  cvFileUrl      String? // path to stored CV file
+
+  // AI-strukturert data (fylt inn av Claude etter innsending)
+  aiKeySkills       String? // JSON-encoded string[]
+  aiExperienceLevel ExperienceLevel?
+  aiSuggestedRoles  String? // JSON-encoded string[]
+  aiSummary         String? // kort AI-generert oppsummering
+  aiProcessedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matches Match[]
+
+  @@index([location])
+  @@index([availability])
+}
+
+model Job {
+  id            String   @id @default(cuid())
+  companyName   String
+  contactName   String
+  contactEmail  String
+  roleType      String // f.eks "sosialrådgiver", "miljøarbeider"
+  description   String
+  location      String
+  desiredStart  DateTime?
+  duration      Duration @default(VIKARIAT)
+
+  screeningQuestions String? // JSON-encoded string[] generert av AI
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matches Match[]
+
+  @@index([roleType])
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  candidateId String
+  jobId       String
+  score       Int // 0-100
+  reasoning   String // AI-generert begrunnelse
+  status      MatchStatus @default(FORESLATT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, jobId])
+  @@index([jobId])
+  @@index([status])
+}
