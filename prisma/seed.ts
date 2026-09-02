@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient, Availability, ExperienceLevel, Duration } from "@prisma/client";
 
 const prisma = new PrismaClient();
