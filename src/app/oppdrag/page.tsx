@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
+import { motion } from "framer-motion";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AnimatedButton } from "@/components/motion/AnimatedButton";
 import { registerJob, type JobFormState } from "./actions";
 
 const inputClass =
@@ -96,16 +98,22 @@ export default function OppdragPage() {
           </div>
 
           {state.error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+            <motion.p
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              {state.error}
+            </motion.p>
           )}
 
-          <button
+          <AnimatedButton
             type="submit"
             disabled={pending}
             className="mt-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:opacity-60"
           >
             {pending ? "Sender inn og finner kandidater…" : "Send inn oppdrag"}
-          </button>
+          </AnimatedButton>
         </form>
       </main>
     </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { AdminStatCards } from "@/components/admin/AdminStatCards";
 
 const statusLabels: Record<string, string> = {
   FORESLATT: "Foreslått",
@@ -40,17 +41,10 @@ export default async function AdminOverviewPage() {
         <p className="mt-1 text-sm text-muted">Status for NordicKrafts kandidater og oppdrag.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {stats.map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-border p-5">
-            <p className="text-sm text-muted">{stat.label}</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight">{stat.value}</p>
-          </div>
-        ))}
-      </div>
+      <AdminStatCards stats={stats} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-border p-5">
+        <div className="rounded-xl border border-border p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">Nyeste oppdrag</h2>
             <Link href="/admin/oppdrag" className="text-sm text-accent hover:underline">
@@ -62,8 +56,11 @@ export default async function AdminOverviewPage() {
           ) : (
             <ul className="flex flex-col divide-y divide-border">
               {recentJobs.map((job) => (
-                <li key={job.id} className="py-3">
-                  <Link href={`/admin/oppdrag/${job.id}`} className="block hover:text-accent">
+                <li key={job.id}>
+                  <Link
+                    href={`/admin/oppdrag/${job.id}`}
+                    className="-mx-2 block rounded-lg px-2 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-light/40 hover:text-accent hover:shadow-sm"
+                  >
                     <p className="font-medium">
                       {job.companyName} · {job.roleType}
                     </p>
@@ -77,17 +74,17 @@ export default async function AdminOverviewPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-border p-5">
+        <div className="rounded-xl border border-border p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">Siste matcher</h2>
           {recentMatches.length === 0 ? (
             <p className="text-sm text-muted">Ingen matcher gjort ennå.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-border">
               {recentMatches.map((match) => (
-                <li key={match.id} className="py-3">
+                <li key={match.id}>
                   <Link
                     href={`/admin/oppdrag/${match.jobId}`}
-                    className="flex items-center justify-between hover:text-accent"
+                    className="-mx-2 flex items-center justify-between rounded-lg px-2 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-light/40 hover:text-accent hover:shadow-sm"
                   >
                     <span>
                       <span className="font-medium">{match.candidate.name}</span>

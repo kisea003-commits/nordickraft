@@ -76,7 +76,7 @@ export default async function AdminKandidaterPage({
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-border bg-accent-light/40 text-left text-muted">
@@ -90,7 +90,10 @@ export default async function AdminKandidaterPage({
           </thead>
           <tbody>
             {candidates.map((c) => (
-              <tr key={c.id} className="border-b border-border last:border-0">
+              <tr
+                key={c.id}
+                className="border-b border-border transition-colors last:border-0 hover:bg-accent-light/25"
+              >
                 <td className="px-4 py-3">
                   <p className="font-medium">{c.name}</p>
                   <p className="text-muted">{c.email}</p>

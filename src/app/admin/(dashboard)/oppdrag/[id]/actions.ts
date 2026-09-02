@@ -1,28 +1,63 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseJsonArray } from "@/lib/serialize";
 import { matchCandidatesToJob, type CandidateForMatching } from "@/lib/anthropic";
 import { MatchStatus } from "@prisma/client";
+import type { MatchCardData } from "@/components/matching/MatchResultCard";
 
-export async function updateMatchStatus(matchId: string, jobId: string, formData: FormData) {
-  const status = formData.get("status");
-  if (typeof status !== "string" || !(status in MatchStatus)) {
-    return;
-  }
-  await prisma.match.update({
-    where: { id: matchId },
-    data: { status: status as MatchStatus },
-  });
-  revalidatePath(`/admin/oppdrag/${jobId}`);
-  revalidatePath("/admin");
+export interface AdminMatchCardData extends MatchCardData {
+  candidateId: string;
+  status: MatchStatus;
+  cvFileName: string | null;
 }
 
-export async function rerunMatching(jobId: string) {
+async function loadJobMatches(jobId: string): Promise<AdminMatchCardData[]> {
+  const matches = await prisma.match.findMany({
+    where: { jobId },
+    orderBy: { score: "desc" },
+    include: { candidate: true },
+  });
+
+  return matches.map((m) => ({
+    id: m.id,
+    candidateId: m.candidateId,
+    name: m.candidate.name,
+    education: m.candidate.education,
+    location: m.candidate.location,
+    score: m.score,
+    reasoning: m.reasoning,
+    keySkills: parseJsonArray(m.candidate.aiKeySkills),
+    status: m.status,
+    cvFileName: m.candidate.cvFileName,
+  }));
+}
+
+export async function updateMatchStatus(
+  matchId: string,
+  jobId: string,
+  status: MatchStatus,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!(status in MatchStatus)) {
+    return { ok: false, error: "Ugyldig status" };
+  }
+  try {
+    await prisma.match.update({ where: { id: matchId }, data: { status } });
+  } catch (err) {
+    console.error("Kunne ikke oppdatere matchstatus:", err);
+    return { ok: false, error: "Kunne ikke oppdatere status" };
+  }
+  revalidatePath(`/admin/oppdrag/${jobId}`);
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function rerunMatching(
+  jobId: string,
+): Promise<{ ok: true; matches: AdminMatchCardData[] } | { ok: false; error: string }> {
   const job = await prisma.job.findUnique({ where: { id: jobId } });
-  if (!job) return;
+  if (!job) return { ok: false, error: "Fant ikke oppdraget" };
 
   const candidates = await prisma.candidate.findMany();
   const candidatesForMatching: CandidateForMatching[] = candidates.map((c) => ({
@@ -40,7 +75,7 @@ export async function rerunMatching(jobId: string) {
   }));
 
   if (candidatesForMatching.length === 0) {
-    redirect(`/admin/oppdrag/${jobId}?error=ingen_kandidater`);
+    return { ok: false, error: "Ingen kandidater i databasen å matche mot ennå." };
   }
 
   try {
@@ -70,10 +105,15 @@ export async function rerunMatching(jobId: string) {
     );
   } catch (err) {
     console.error("AI-matching feilet:", err);
-    redirect(`/admin/oppdrag/${jobId}?error=ai_feilet`);
+    return {
+      ok: false,
+      error: "AI-matching feilet. Sjekk at ANTHROPIC_API_KEY er satt riktig i miljøvariablene.",
+    };
   }
 
   revalidatePath(`/admin/oppdrag/${jobId}`);
   revalidatePath("/admin");
-  redirect(`/admin/oppdrag/${jobId}?success=1`);
+
+  const updated = await loadJobMatches(jobId);
+  return { ok: true, matches: updated };
 }
