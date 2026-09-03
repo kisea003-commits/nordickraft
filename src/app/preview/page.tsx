@@ -6,6 +6,7 @@ import { MatchingSequence, type MatchingPhase } from "@/components/matching/Matc
 import type { MatchCardData } from "@/components/matching/MatchResultCard";
 import { ConnectButton } from "@/components/matching/ConnectButton";
 import type { SchoolPreviewData } from "@/components/matching/SchoolPreviewModal";
+import { Mascot } from "@/components/Mascot";
 
 const MOCK_CANDIDATE_POOL = [
   "Mohammed Farah",
@@ -169,6 +170,20 @@ export default function PreviewPage() {
               setConnected(true);
             }}
           />
+        </div>
+
+        <hr className="my-12 border-border" />
+
+        <p className="mb-2 text-sm font-medium uppercase tracking-wide text-accent">Maskot</p>
+        <h2 className="text-2xl font-semibold tracking-tight">Interaktiv hilsen-maskot</h2>
+        <p className="mt-3 text-muted">
+          Vinker automatisk ved lasting, vinker på nytt ved hover eller når den scrolles
+          inn i synsfeltet, og reagerer med en snakkeboble ved klikk/trykk. Bytt gjerne
+          fane bort og tilbake, eller scroll den ut og inn av syne, for å se
+          gjeninntreden-vinket.
+        </p>
+        <div className="mt-6 flex justify-center rounded-xl border border-border bg-white p-10 shadow-sm">
+          <Mascot />
         </div>
       </main>
     </div>
