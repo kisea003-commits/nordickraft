@@ -45,6 +45,8 @@ export default async function AdminOppdragDetailPage({
     keySkills: parseJsonArray(m.candidate.aiKeySkills),
     status: m.status,
     cvFileName: m.candidate.cvFileName,
+    email: m.candidate.email,
+    phone: m.candidate.phone,
   }));
 
   return (
@@ -80,6 +82,7 @@ export default async function AdminOppdragDetailPage({
 
       <JobMatchesPanel
         jobId={job.id}
+        schoolName={job.companyName}
         initialMatches={initialMatches}
         candidatePoolNames={candidateNames.map((c) => c.name)}
       />

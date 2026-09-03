@@ -73,7 +73,9 @@ const MatchResultSchema = z.object({
         score: z.number().int().min(0).max(100),
         reasoning: z
           .string()
-          .describe("Kort begrunnelse på norsk for hvorfor kandidaten passer, 1-3 setninger"),
+          .describe(
+            "Konkret, personlig begrunnelse på norsk, 2-3 setninger. Skal nevne spesifikke, faktiske detaljer fra kandidatens profil (navngitt utdanning/institusjon, konkret erfaring, språk/kulturkompetanse når det er relevant for elevgruppen, geografisk nærhet) - ikke generiske fraser som 'har relevant erfaring'.",
+          ),
       }),
     )
     .max(5)
@@ -131,14 +133,14 @@ export async function matchCandidatesToJob(
     `Tilgjengelige kandidater:`,
     candidateBlock,
     ``,
-    `Rangér de 5 beste kandidatene for dette oppdraget. Gi hver en matchscore fra 0-100 og en kort norsk begrunnelse som starter med "Denne kandidaten passer fordi...". Bruk kun candidateId fra listen over.`,
+    `Rangér de 5 beste kandidatene for dette oppdraget. Gi hver en matchscore fra 0-100 og en begrunnelse på norsk som starter med "Denne kandidaten passer fordi...", på 2-3 setninger. Begrunnelsen skal være konkret og personlig - trekk frem spesifikke, faktiske detaljer fra kandidatens profil under (navngitt utdanning/institusjon, konkret erfaring som er relevant for akkurat denne rollen, språk- eller kulturkompetanse når det er relevant for elevgruppen/oppdraget, og geografisk nærhet til oppdragsstedet). Unngå generiske formuleringer som "har relevant erfaring" - vis konkret hvorfor. Bruk kun candidateId fra listen over.`,
   ].join("\n");
 
   const response = await client.messages.parse({
     model: MODEL,
     max_tokens: 4000,
     system:
-      "Du er en erfaren rekrutterer hos det norske bemanningsbyrået NordicKraft, som matcher kandidater mot oppdrag fra skoler og andre virksomheter. Vurder relevans av utdanning, ferdigheter, erfaringsnivå, sted og tilgjengelighet.",
+      "Du er en erfaren rekrutterer hos det norske bemanningsbyrået NordicKraft, som matcher kandidater mot oppdrag fra skoler og andre virksomheter. Vurder relevans av utdanning, ferdigheter, erfaringsnivå, sted og tilgjengelighet. Når oppdraget gjelder en skole med en flerkulturell eller flerspråklig elevgruppe (fremgår ofte av stedet eller beskrivelsen), skal du aktivt vektlegge kandidater med relevant språkkompetanse eller kulturkompetanse - dette er en reell styrke i sosialrådgiver- og miljøarbeiderroller, ikke en bonus som skal nevnes i forbifarten. Begrunnelsene dine skal alltid være konkrete og etterprøvbare ut fra kandidatprofilene du får oppgitt, aldri oppdiktet informasjon.",
     messages: [{ role: "user", content: prompt }],
     output_config: { format: zodOutputFormat(MatchResultSchema) },
   });

@@ -4,76 +4,94 @@ import { useState, useCallback } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MatchingSequence, type MatchingPhase } from "@/components/matching/MatchingSequence";
 import type { MatchCardData } from "@/components/matching/MatchResultCard";
+import { ConnectButton } from "@/components/matching/ConnectButton";
+import type { SchoolPreviewData } from "@/components/matching/SchoolPreviewModal";
 
 const MOCK_CANDIDATE_POOL = [
+  "Mohammed Farah",
+  "Yasmin Haidari",
+  "Ibrahim Nur",
+  "Selma Berisha",
+  "Fatima Al-Amin",
+  "Amara Osei",
+  "Leon Dahl",
+  "Layla Chaudhry",
   "Emma Haugland",
   "Markus Berg",
-  "Sara Nilsen",
-  "Ali Hassan",
-  "Ingrid Solberg",
-  "Kevin Johansen",
-  "Frida Eide",
 ];
 
 const MOCK_MATCHES: MatchCardData[] = [
   {
     id: "1",
-    name: "Emma Haugland",
-    education: "Bachelor i sosialt arbeid, OsloMet",
+    name: "Mohammed Farah",
+    education: "Bachelor i barnevern, OsloMet",
     location: "Oslo",
     score: 97,
     reasoning:
-      "Denne kandidaten passer fordi hun har fem års erfaring som miljøterapeut med spisskompetanse på nettopp lavaffektiv tilnærming. Hun er bosatt i Oslo og tilgjengelig heltid.",
-    keySkills: ["Miljøterapi", "Lavaffektiv tilnærming", "Krisehåndtering", "Barnevern"],
+      "Denne kandidaten passer fordi han har fire års erfaring som miljøarbeider nettopp på Stovner og snakker flytende somali og arabisk – en direkte styrke opp mot skolens flerkulturelle elevgruppe og foreldresamarbeid.",
+    keySkills: ["Somali (flytende)", "Arabisk", "Foreldresamarbeid", "Konfliktmegling"],
   },
   {
     id: "2",
-    name: "Henrik Moe",
-    education: "Bachelor i vernepleie, Høgskulen på Vestlandet",
-    location: "Bergen",
-    score: 85,
+    name: "Ibrahim Nur",
+    education: "Bachelor i vernepleie, VID vitenskapelige høgskole",
+    location: "Oslo",
+    score: 88,
     reasoning:
-      "Erfaren vernepleier med spisskompetanse på lavaffektiv tilnærming fra barnevernsinstitusjon. Eneste minus er at han er bosatt i Bergen.",
-    keySkills: ["Lavaffektiv tilnærming", "Selvregulering", "Grensesetting"],
+      "Senior miljøterapeut med seks års erfaring fra ungdomsskoler i Oslo øst og somalisk/arabisk språkkompetanse, med solid spesialisering på skolevegring hos gutter – nært beslektet med rollen.",
+    keySkills: ["Somali", "Arabisk", "Lavaffektiv tilnærming", "Skolevegring"],
   },
   {
     id: "3",
-    name: "Frida Eide",
-    education: "Master i psykososialt arbeid, OsloMet",
+    name: "Amara Osei",
+    education: "Bachelor i barnevern, VID vitenskapelige høgskole",
     location: "Oslo",
-    score: 78,
+    score: 74,
     reasoning:
-      "Senior miljøterapeut i Oslo med master i psykososialt arbeid og spesialisering i traumebevisst omsorg, som ligger tett opp mot lavaffektiv tilnærming.",
-    keySkills: ["Traumebevisst omsorg", "Gruppeledelse", "Psykisk helse"],
+      "Erfaren miljøarbeider med tre år fra arbeid med enslige mindreårige flyktninger og solid traumebevisst omsorgskompetanse, men mangler somali/arabisk som er nevnt som fordel for denne elevgruppen.",
+    keySkills: ["Twi", "Traumebevisst omsorg", "Nettverksarbeid"],
   },
   {
     id: "4",
-    name: "Markus Berg",
-    education: "Bachelor i vernepleie, Universitetet i Bergen",
-    location: "Bergen",
-    score: 68,
+    name: "Emma Haugland",
+    education: "Bachelor i sosialt arbeid, OsloMet",
+    location: "Oslo",
+    score: 65,
     reasoning:
-      "Erfaren vernepleier med miljøterapi, ART og krisehåndtering fra ungdomsbofellesskap, og tilgjengelig heltid. Mangler dokumentert lavaffektiv kompetanse.",
-    keySkills: ["Miljøterapi", "ART", "Krisehåndtering"],
+      "Nyutdannet sosionom med praksis fra barnevernskontor og god samtaleteknikk, men uten spesifikk erfaring fra flerkulturelle miljøer eller relevant språkkompetanse.",
+    keySkills: ["Samtaleteknikk", "Konflikthåndtering", "Barnevern"],
   },
   {
     id: "5",
-    name: "Ingrid Solberg",
-    education: "Bachelor i vernepleie, Høgskolen i Innlandet",
-    location: "Lillehammer",
-    score: 63,
+    name: "Leon Dahl",
+    education: "Bachelor i psykologi, Universitetet i Oslo",
+    location: "Oslo",
+    score: 58,
     reasoning:
-      "Erfaren miljøterapeut med sterk relasjonskompetanse og BUP-samarbeid. Erfaringen er primært fra skolesektoren og ikke barnevern.",
-    keySkills: ["Individuell oppfølging", "Samarbeid med BUP", "Relasjonsbygging"],
+      "Nyutdannet med praksis fra PPT og god kompetanse på kartlegging av lærevansker, men deltid-tilgjengelighet og manglende miljøarbeidererfaring trekker ned for denne heltidsrollen.",
+    keySkills: ["PPT-erfaring", "Kartlegging av lærevansker", "Individuelle samtaler"],
   },
 ];
 
+const SCHOOL_PREVIEW: SchoolPreviewData = {
+  candidateName: MOCK_MATCHES[0].name,
+  education: MOCK_MATCHES[0].education,
+  location: MOCK_MATCHES[0].location,
+  score: MOCK_MATCHES[0].score,
+  reasoning: MOCK_MATCHES[0].reasoning,
+  keySkills: MOCK_MATCHES[0].keySkills,
+  email: "mohammed.farah@example.no",
+  phone: "412 90 887",
+  schoolName: "Stovner skole",
+};
+
 export default function PreviewPage() {
   const [phase, setPhase] = useState<MatchingPhase>("idle");
+  const [connected, setConnected] = useState(false);
 
   const run = useCallback(() => {
     setPhase("analyzing");
-    setTimeout(() => setPhase("results"), 2600);
+    setTimeout(() => setPhase("results"), 3200);
   }, []);
 
   return (
@@ -85,7 +103,8 @@ export default function PreviewPage() {
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">AI-matching-sekvens</h1>
         <p className="mt-3 text-muted">
-          Dette er en isolert forhåndsvisning av den nye AI-matching-animasjonen, med
+          Dette er en isolert forhåndsvisning av den oppgraderte AI-matching-animasjonen
+          (sekvensiell &quot;AI vurderer...&quot;-skanning + sirkulær score-indikator), med
           eksempeldata. Ikke koblet til ekte oppdrag ennå.
         </p>
 
@@ -117,9 +136,39 @@ export default function PreviewPage() {
               phase={phase}
               matches={MOCK_MATCHES}
               candidatePoolNames={MOCK_CANDIDATE_POOL}
-              heading="Topp 5 kandidater for Sosialrådgiver-oppdraget"
+              heading="Topp 5 kandidater for Miljøarbeider-oppdraget hos Stovner skole"
             />
           )}
+        </div>
+
+        <hr className="my-12 border-border" />
+
+        <p className="mb-2 text-sm font-medium uppercase tracking-wide text-accent">
+          &quot;Koble sammen&quot;-flyt
+        </p>
+        <h2 className="text-2xl font-semibold tracking-tight">Send match til skole</h2>
+        <p className="mt-3 text-muted">
+          Knappen under viser hva som skjer når admin kobler en kandidat til en skole:
+          statusen oppdateres, en kort suksess-animasjon vises på knappen, og en
+          detaljvisning simulerer hva skolen mottar.
+        </p>
+
+        <div className="mt-6 flex items-center gap-3 rounded-xl border border-border bg-white p-5 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-light text-sm font-semibold text-accent">
+            MF
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold">Mohammed Farah</p>
+            <p className="text-sm text-muted">97% match · Miljøarbeider, Stovner skole</p>
+          </div>
+          <ConnectButton
+            alreadyConnected={connected}
+            data={SCHOOL_PREVIEW}
+            onConnect={async () => {
+              await new Promise((r) => setTimeout(r, 600));
+              setConnected(true);
+            }}
+          />
         </div>
       </main>
     </div>

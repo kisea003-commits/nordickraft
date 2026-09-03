@@ -11,6 +11,8 @@ export interface AdminMatchCardData extends MatchCardData {
   candidateId: string;
   status: MatchStatus;
   cvFileName: string | null;
+  email: string;
+  phone: string;
 }
 
 async function loadJobMatches(jobId: string): Promise<AdminMatchCardData[]> {
@@ -31,6 +33,8 @@ async function loadJobMatches(jobId: string): Promise<AdminMatchCardData[]> {
     keySkills: parseJsonArray(m.candidate.aiKeySkills),
     status: m.status,
     cvFileName: m.candidate.cvFileName,
+    email: m.candidate.email,
+    phone: m.candidate.phone,
   }));
 }
 

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { CountUp } from "@/components/motion/CountUp";
+import { CircularScore } from "@/components/motion/CircularScore";
 import { Typewriter } from "@/components/motion/Typewriter";
 
 export interface MatchCardData {
@@ -82,17 +82,12 @@ export function MatchResultCard({
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <span
-            className={`text-2xl font-bold tabular-nums ${isTop ? "text-gold" : "text-accent"}`}
-          >
-            <CountUp
-              value={match.score}
-              suffix="%"
-              delay={delay + 0.15}
-              duration={1.1}
-              triggerOnMount
-            />
-          </span>
+          <CircularScore
+            value={match.score}
+            delay={delay + 0.15}
+            duration={1.1}
+            color={isTop ? "var(--gold)" : "var(--accent)"}
+          />
           <span className="text-xs text-muted">match</span>
           {headerExtra}
         </div>

@@ -4,15 +4,18 @@ import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MatchingSequence, type MatchingPhase } from "@/components/matching/MatchingSequence";
 import { MatchResultCard } from "@/components/matching/MatchResultCard";
+import { ConnectButton } from "@/components/matching/ConnectButton";
 import { StatusPipeline, STATUS_OPTIONS, type MatchStatusValue } from "@/components/matching/StatusPipeline";
 import { rerunMatching, updateMatchStatus, type AdminMatchCardData } from "./actions";
 
 export function JobMatchesPanel({
   jobId,
+  schoolName,
   initialMatches,
   candidatePoolNames,
 }: {
   jobId: string;
+  schoolName: string;
   initialMatches: AdminMatchCardData[];
   candidatePoolNames: string[];
 }) {
@@ -36,16 +39,14 @@ export function JobMatchesPanel({
     });
   }
 
-  function handleStatusChange(matchId: string, status: MatchStatusValue) {
+  async function updateStatus(matchId: string, status: MatchStatusValue) {
     const previous = matches;
     setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, status } : m)));
-    startTransition(async () => {
-      const res = await updateMatchStatus(matchId, jobId, status);
-      if (!res.ok) {
-        setMatches(previous);
-        setError(res.error);
-      }
-    });
+    const res = await updateMatchStatus(matchId, jobId, status);
+    if (!res.ok) {
+      setMatches(previous);
+      setError(res.error);
+    }
   }
 
   return (
@@ -102,21 +103,44 @@ export function JobMatchesPanel({
                 ) : undefined
               }
               footer={
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <StatusPipeline status={match.status} />
-                  <select
-                    value={match.status}
-                    onChange={(e) =>
-                      handleStatusChange(match.id, e.target.value as MatchStatusValue)
-                    }
-                    className="rounded-md border border-border bg-white px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <StatusPipeline status={match.status} />
+                    {match.status !== "AVSLATT" && (
+                      <ConnectButton
+                        alreadyConnected={match.status !== "FORESLATT"}
+                        data={{
+                          candidateName: match.name,
+                          education: match.education,
+                          location: match.location,
+                          score: match.score,
+                          reasoning: match.reasoning,
+                          keySkills: match.keySkills,
+                          email: match.email,
+                          phone: match.phone,
+                          schoolName,
+                        }}
+                        onConnect={() => updateStatus(match.id, "SENDT_TIL_KUNDE")}
+                      />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <label className="text-xs text-muted" htmlFor={`status-${match.id}`}>
+                      Sett status manuelt:
+                    </label>
+                    <select
+                      id={`status-${match.id}`}
+                      value={match.status}
+                      onChange={(e) => updateStatus(match.id, e.target.value as MatchStatusValue)}
+                      className="rounded-md border border-border bg-white px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                    >
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               }
             />
